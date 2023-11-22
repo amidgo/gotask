@@ -34,7 +34,7 @@ func Editing(first, second string, maxOperationCount int) bool {
 	return editing(first, second, maxOperationCount)
 }
 
-func editing(first, second string, maxMismatchCount int) bool {
+func editing(first, second string, maxOperations int) bool {
 	if first == second {
 		return true
 	}
@@ -43,9 +43,9 @@ func editing(first, second string, maxMismatchCount int) bool {
 	lengthDifference := intAbs(len(first) - len(second))
 	switch {
 	case lengthDifference == 0:
-		return replaceCharCase(firstRuneList, secondRuneList, maxMismatchCount)
-	case lengthDifference > 0 && lengthDifference <= maxMismatchCount:
-		return removeCharCase(firstRuneList, secondRuneList, maxMismatchCount)
+		return replaceCharCase(firstRuneList, secondRuneList, maxOperations)
+	case lengthDifference > 0 && lengthDifference <= maxOperations:
+		return removeCharCase(firstRuneList, secondRuneList, maxOperations)
 	default:
 		return false
 	}
@@ -65,13 +65,26 @@ func replaceCharCase(firstRuneList, secondRuneList []rune, maxMismatches int) bo
 }
 
 func removeCharCase(firstRuneList, secondRuneList []rune, maxMismatches int) bool {
-	maxLengthRuneList, minLengthRuneList := maxLenghtRuneList(firstRuneList, secondRuneList)
-	var offset int
-	var mismatchCount int
-
-	for index := range maxLengthRuneList {
-
+	if len(firstRuneList) == 0 || len(secondRuneList) == 0 {
+		return true
 	}
+	maxLengthRuneList, minLengthRuneList := maxLenghtRuneList(firstRuneList, secondRuneList)
+	var mismatchesCount int
+	for index := range maxLengthRuneList {
+		offsetIndex := index - mismatchesCount
+		if offsetIndex > len(minLengthRuneList)-1 {
+			mismatchesCount++
+			continue
+		}
+		if maxLengthRuneList[index] == minLengthRuneList[offsetIndex] {
+			continue
+		}
+		mismatchesCount++
+	}
+	if mismatchesCount > maxMismatches {
+		return false
+	}
+	return true
 }
 
 func maxLenghtRuneList(firstRuneList, secondRuneList []rune) (max []rune, min []rune) {
