@@ -28,7 +28,7 @@ package gotask
 */
 
 func Editing(first, second string, maxOperationCount int) bool {
-	if len(first) == 1 && len(second) == 1 {
+	if len(first) == maxOperationCount && len(second) == maxOperationCount {
 		return true
 	}
 	return editing(first, second, maxOperationCount)
