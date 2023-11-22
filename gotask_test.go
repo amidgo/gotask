@@ -73,6 +73,13 @@ var operationCountEqual_1_Cases = []*EditingCase{
 		maxOperationsCount: 1,
 	},
 	{
+		name:               "2 different operations append to end and replace in middle",
+		first:              "abcde",
+		second:             "bbde",
+		expectedResult:     false,
+		maxOperationsCount: 1,
+	},
+	{
 		name:               "need remove 2 char",
 		first:              "aba",
 		second:             "a",

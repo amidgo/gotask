@@ -45,7 +45,7 @@ func editing(first, second string, maxOperations int) bool {
 	case lengthDifference == 0:
 		return replaceRuneCase(firstRuneList, secondRuneList, maxOperations)
 	case lengthDifference > 0 && lengthDifference <= maxOperations:
-		return true
+		return appendRuneCase(firstRuneList, secondRuneList, maxOperations)
 	default:
 		return false
 	}
