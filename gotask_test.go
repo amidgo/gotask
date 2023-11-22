@@ -252,7 +252,7 @@ var operationCountEqual_2_Cases = []*EditingCase{
 func Test_Editing(t *testing.T) {
 	cases := make([]*EditingCase, 0)
 	cases = append(cases, operationCountEqual_1_Cases...)
-	// cases = append(cases, operationCountEqual_2_Cases...)
+	cases = append(cases, operationCountEqual_2_Cases...)
 
 	for _, cs := range cases {
 		name := fmt.Sprintf("%s, max op count %d", cs.name, cs.maxOperationsCount)
@@ -264,5 +264,5 @@ func Test_Editing(t *testing.T) {
 
 func testEditingCase(t *testing.T, editingCase *EditingCase) {
 	result := gotask.Editing(editingCase.first, editingCase.second, editingCase.maxOperationsCount)
-	assert.Equal(t, result, editingCase.expectedResult)
+	assert.Equal(t, editingCase.expectedResult, result)
 }
