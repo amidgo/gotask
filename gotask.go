@@ -83,9 +83,7 @@ func (s *StringEditor) canEdit() bool {
 	for index := 0; index < len(s.maxLengthRuneList); index++ {
 		offsetIndex := s.offsetIndex(index)
 		if offsetIndex > lastMinLengthRuneListIndex {
-			for i := 0; i < offsetIndex-lastMinLengthRuneListIndex; i++ {
-				s.addInsertOperation()
-			}
+			s.addRemainInsertOperations(index)
 			break
 		}
 		if s.maxLengthRuneList[index] == s.minLengthRuneList[offsetIndex] {
@@ -147,6 +145,14 @@ func (s *StringEditor) canAddInsertOperation() bool {
 
 func (s *StringEditor) lengthDifference() int {
 	return len(s.maxLengthRuneList) - len(s.minLengthRuneList)
+}
+
+func (s *StringEditor) addRemainInsertOperations(index int) {
+	lastMinLengthRuneListIndex := len(s.minLengthRuneList) - 1
+	offsetIndex := s.offsetIndex(index)
+	for i := 0; i < offsetIndex-lastMinLengthRuneListIndex; i++ {
+		s.addInsertOperation()
+	}
 }
 
 func (s *StringEditor) addInsertOperation() {
