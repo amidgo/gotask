@@ -117,28 +117,6 @@ func (s *StringEditor) canReplaceIndex(index int) bool {
 	return editor.CanEdit()
 }
 
-func (s *StringEditor) canReplaceRemainFromIndex(index int) bool {
-	lastMaxLengthRuneList := len(s.maxLengthRuneList) - 1
-	lastMinLengthRuneList := len(s.minLengthRuneList) - 1
-
-	replaceOperationsCount := s.replaceOperationsCountFromIndex(index)
-	currentLastOffsetIndex := lastMaxLengthRuneList - s.offset
-	replaceOperationsCount += currentLastOffsetIndex - lastMinLengthRuneList
-
-	canReplace := replaceOperationsCount+s.insertOperationsCount <= s.maxOperations
-	return canReplace
-}
-
-func (s *StringEditor) replaceOperationsCountFromIndex(index int) int {
-	offsetIndex := s.offsetIndex(index)
-	itemsLeft := len(s.minLengthRuneList[offsetIndex:])
-
-	return replaceOperationsCount(
-		s.maxLengthRuneList[index:index+itemsLeft],
-		s.minLengthRuneList[offsetIndex:],
-	)
-}
-
 func (s *StringEditor) canAddInsertOperation() bool {
 	return s.insertOperationsCount < s.lengthDifference()
 }
@@ -182,12 +160,4 @@ func maxMinLenghtRuneList(firstRuneList, secondRuneList []rune) (max []rune, min
 		min = firstRuneList
 	}
 	return
-}
-
-func intAbs(i int) int {
-	if i >= 0 {
-		return i
-	} else {
-		return -i
-	}
 }
