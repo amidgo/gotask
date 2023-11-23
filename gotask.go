@@ -25,6 +25,9 @@ package gotask
 
    abc
    defz
+
+
+
 */
 
 func Editing(first, second string, maxOperationCount int) bool {
@@ -47,8 +50,8 @@ type StringEditor struct {
 	maxLengthRuneList []rune
 	minLengthRuneList []rune
 
-	operationsCount int
-	offset          int
+	insertOperationsCount int
+	offset                int
 }
 
 func NewStringEditor(first, second string, maxOperations int) *StringEditor {
@@ -61,10 +64,10 @@ func NewStringEditor(first, second string, maxOperations int) *StringEditor {
 }
 
 func (s *StringEditor) CanEdit() bool {
-	lengthDifference := len(s.maxLengthRuneList) - len(s.minLengthRuneList)
+	lengthDifference := s.lengthDifference()
 	switch {
 	case lengthDifference == 0:
-		return replaceRuneMismatches(s.maxLengthRuneList, s.minLengthRuneList) <= s.maxOperations
+		return replaceOperationsCount(s.maxLengthRuneList, s.minLengthRuneList) <= s.maxOperations
 	case lengthDifference > 0 && lengthDifference <= s.maxOperations:
 		if len(s.maxLengthRuneList) == 0 || len(s.minLengthRuneList) == 0 {
 			return true
@@ -77,58 +80,91 @@ func (s *StringEditor) CanEdit() bool {
 
 func (s *StringEditor) canEdit() bool {
 	lastMinLengthRuneListIndex := len(s.minLengthRuneList) - 1
-
 	for index := 0; index < len(s.maxLengthRuneList); index++ {
 		offsetIndex := s.offsetIndex(index)
-		if offsetIndex > len(s.minLengthRuneList)-1 {
-			s.operationsCount += offsetIndex - lastMinLengthRuneListIndex
+		if offsetIndex > lastMinLengthRuneListIndex {
+			for i := 0; i < offsetIndex-lastMinLengthRuneListIndex; i++ {
+				s.addInsertOperation()
+			}
 			break
 		}
 		if s.maxLengthRuneList[index] == s.minLengthRuneList[offsetIndex] {
 			continue
 		}
-		if s.canReplaceRemainFromIndex(index) {
+		if s.canReplaceIndex(index) {
 			return true
 		}
-		s.addAppendOperation()
+		if !s.canAddInsertOperation() {
+			return false
+		}
+		s.addInsertOperation()
 	}
-	return s.operationsCount <= s.maxOperations
+	return s.operationsCount() <= s.maxOperations
 }
 
 func (s *StringEditor) offsetIndex(index int) int {
 	return index - s.offset
 }
 
+func (s *StringEditor) canReplaceIndex(index int) bool {
+	index++
+	offsetIndex := s.offsetIndex(index)
+
+	operationsCount := s.operationsCount() + 1
+	editor := StringEditor{
+		maxOperations:     s.maxOperations - operationsCount,
+		maxLengthRuneList: s.maxLengthRuneList[index:],
+		minLengthRuneList: s.minLengthRuneList[offsetIndex:],
+	}
+	return editor.CanEdit()
+}
+
 func (s *StringEditor) canReplaceRemainFromIndex(index int) bool {
 	lastMaxLengthRuneList := len(s.maxLengthRuneList) - 1
 	lastMinLengthRuneList := len(s.minLengthRuneList) - 1
 
+	replaceOperationsCount := s.replaceOperationsCountFromIndex(index)
+	currentLastOffsetIndex := lastMaxLengthRuneList - s.offset
+	replaceOperationsCount += currentLastOffsetIndex - lastMinLengthRuneList
+
+	canReplace := replaceOperationsCount+s.insertOperationsCount <= s.maxOperations
+	return canReplace
+}
+
+func (s *StringEditor) replaceOperationsCountFromIndex(index int) int {
 	offsetIndex := s.offsetIndex(index)
 	itemsLeft := len(s.minLengthRuneList[offsetIndex:])
 
-	replaceMismatches := replaceRuneMismatches(
+	return replaceOperationsCount(
 		s.maxLengthRuneList[index:index+itemsLeft],
 		s.minLengthRuneList[offsetIndex:],
 	)
-
-	currentLastOffsetIndex := lastMaxLengthRuneList - s.offset
-	replaceMismatches += currentLastOffsetIndex - lastMinLengthRuneList
-
-	return replaceMismatches+s.operationsCount <= s.maxOperations
 }
 
-func (s *StringEditor) addAppendOperation() {
-	s.operationsCount++
+func (s *StringEditor) canAddInsertOperation() bool {
+	return s.insertOperationsCount < s.lengthDifference()
+}
+
+func (s *StringEditor) lengthDifference() int {
+	return len(s.maxLengthRuneList) - len(s.minLengthRuneList)
+}
+
+func (s *StringEditor) addInsertOperation() {
+	s.insertOperationsCount++
 	s.offset++
 }
 
-func replaceRuneMismatches(firstRuneList, secondRuneList []rune) (mismatchCount int) {
+func (s *StringEditor) operationsCount() int {
+	return s.insertOperationsCount
+}
+
+func replaceOperationsCount(firstRuneList, secondRuneList []rune) (operationCount int) {
 	for index := range firstRuneList {
 		if firstRuneList[index] != secondRuneList[index] {
-			mismatchCount++
+			operationCount++
 		}
 	}
-	return mismatchCount
+	return operationCount
 }
 
 func maxMinLenghtRuneList(firstRuneList, secondRuneList []rune) (max []rune, min []rune) {
