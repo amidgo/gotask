@@ -253,7 +253,7 @@ func Test_Editing(t *testing.T) {
 	cases := make([]*EditingCase, 0)
 	cases = append(cases, operationCountEqual_1_Cases...)
 	cases = append(cases, operationCountEqual_2_Cases...)
-	cases = append(cases, GenerateCasesForMaxOperationCount(3, 10)...)
+	cases = append(cases, GenerateCasesForMaxOperationCount(3, 20)...)
 
 	for _, cs := range cases {
 		name := fmt.Sprintf("%s, max op count %d", cs.Name, cs.MaxOperationsCount)

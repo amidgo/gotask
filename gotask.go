@@ -31,17 +31,7 @@ package gotask
 */
 
 func Editing(first, second string, maxOperationCount int) bool {
-	if len(first) == maxOperationCount && len(second) == maxOperationCount {
-		return true
-	}
-	return editing(first, second, maxOperationCount)
-}
-
-func editing(first, second string, maxOperations int) bool {
-	if first == second {
-		return true
-	}
-	editor := NewStringEditor(first, second, maxOperations)
+	editor := NewStringEditor(first, second, maxOperationCount)
 	return editor.CanEdit()
 }
 
@@ -64,11 +54,16 @@ func NewStringEditor(first, second string, maxOperations int) *StringEditor {
 }
 
 func (s *StringEditor) CanEdit() bool {
-	lengthDifference := s.lengthDifference()
+	requiredInsertOperations := s.lengthDifference()
+	replaceOperationsOnly := requiredInsertOperations == 0
 	switch {
-	case lengthDifference == 0:
-		return replaceOperationsCount(s.maxLengthRuneList, s.minLengthRuneList) <= s.maxOperations
-	case lengthDifference > 0 && lengthDifference <= s.maxOperations:
+	case replaceOperationsOnly:
+		if len(s.maxLengthRuneList) <= s.maxOperations {
+			return true
+		}
+		operationsCount := replaceOperationsCount(s.maxLengthRuneList, s.minLengthRuneList)
+		return operationsCount <= s.maxOperations
+	case requiredInsertOperations > 0 && requiredInsertOperations <= s.maxOperations:
 		if len(s.maxLengthRuneList) == 0 || len(s.minLengthRuneList) == 0 {
 			return true
 		}
@@ -78,6 +73,9 @@ func (s *StringEditor) CanEdit() bool {
 	}
 }
 
+// n = length of maxLenghtList
+// mp = max operations count
+// O = n + mp(n-1 + mp-1(n-2 + mp-2(...)))
 func (s *StringEditor) canEdit() bool {
 	lastMinLengthRuneListIndex := len(s.minLengthRuneList) - 1
 	for index := 0; index < len(s.maxLengthRuneList); index++ {
@@ -89,7 +87,10 @@ func (s *StringEditor) canEdit() bool {
 		if s.maxLengthRuneList[index] == s.minLengthRuneList[offsetIndex] {
 			continue
 		}
-		if s.canReplaceIndex(index) {
+		if s.operationsCount() == s.maxOperations {
+			return false
+		}
+		if s.canEditItemsAfterIndex(index) {
 			return true
 		}
 		if !s.canAddInsertOperation() {
@@ -104,7 +105,7 @@ func (s *StringEditor) offsetIndex(index int) int {
 	return index - s.offset
 }
 
-func (s *StringEditor) canReplaceIndex(index int) bool {
+func (s *StringEditor) canEditItemsAfterIndex(index int) bool {
 	index++
 	offsetIndex := s.offsetIndex(index)
 
